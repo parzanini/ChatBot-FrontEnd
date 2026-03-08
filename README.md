@@ -1,76 +1,44 @@
-# ChatBot-FrontEnd
+# Chatbot-FrontEnd
 
-A modern React application built with Vite and styled with Tailwind CSS.
+This template should help get you started developing with Vue 3 in Vite.
 
-## Features
+## Recommended IDE Setup
 
-- ⚛️ React 19 with JavaScript
-- 🎨 Tailwind CSS for styling
-- ⚡ Vite for fast development and building
-- 📦 PostCSS with Autoprefixer
+[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-## Getting Started
+## Recommended Browser Setup
 
-### Prerequisites
+- Chromium-based browsers (Chrome, Edge, Brave, etc.):
+  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
+  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
+- Firefox:
+  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
+  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
 
-- Node.js (v18 or higher)
-- npm or yarn
+## Customize configuration
 
-### Installation
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-1. Clone the repository
-2. Install dependencies:
+## Project Setup
 
-```bash
+```sh
 npm install
 ```
 
-### Development
+### Compile and Hot-Reload for Development
 
-To start the development server:
-
-```bash
+```sh
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173/`
+### Compile and Minify for Production
 
-### Build
-
-To build the application for production:
-
-```bash
+```sh
 npm run build
 ```
 
-The built files will be in the `dist` directory.
+### Lint with [ESLint](https://eslint.org/)
 
-### Preview
-
-To preview the production build locally:
-
-```bash
-npm run preview
+```sh
+npm run lint
 ```
-
-## Project Structure
-
-```
-ChatBot-FrontEnd/
-├── src/
-│   ├── App.jsx          # Main application component
-│   ├── main.jsx         # Application entry point
-│   └── index.css        # Global styles with Tailwind directives
-├── index.html           # HTML template
-├── vite.config.js       # Vite configuration
-├── tailwind.config.js   # Tailwind CSS configuration
-├── postcss.config.js    # PostCSS configuration
-└── package.json         # Project dependencies
-```
-
-## Technologies Used
-
-- **React** - JavaScript library for building user interfaces
-- **Vite** - Next generation frontend tooling
-- **Tailwind CSS** - Utility-first CSS framework
-- **PostCSS** - Tool for transforming CSS with JavaScript
