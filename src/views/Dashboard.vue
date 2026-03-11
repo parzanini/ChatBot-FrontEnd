@@ -1,43 +1,33 @@
 <!-- eslint-disable vue/multi-word-component-names -->
-<script setup></script>
+<script setup>
+function uploadDocument() {
+  console.info('Upload document action is not implemented yet.')
+}
+</script>
 
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="page-shell">
     <!-- Header -->
-    <header class="bg-[#4A9CA6] text-white py-4 px-6 shadow-md">
-      <h1 class="text-2xl font-semibold">Admin Dashboard</h1>
+    <header class="page-header">
+      <h1 class="text-2xl font-semibold tracking-tight">Admin Dashboard</h1>
     </header>
 
     <div class="flex">
       <!-- Sidebar -->
-      <aside class="w-48 bg-gray-200 min-h-[calc(100vh-64px)]">
+      <aside class="page-sidebar">
         <nav class="py-4">
-          <RouterLink
-            to="/"
-            class="block px-6 py-3 text-[#4A9CA6] font-medium bg-white border-l-4 border-[#4A9CA6]"
-          >
-            Dashboard
-          </RouterLink>
-          <RouterLink
-            to="/web-scraper"
-            class="block px-6 py-3 text-gray-700 hover:bg-gray-300 transition"
-          >
-            Web Scraper
-          </RouterLink>
+          <RouterLink to="/" class="nav-item-active"> Dashboard </RouterLink>
+          <RouterLink to="/web-scraper" class="nav-item"> Web Scraper </RouterLink>
         </nav>
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 p-8">
-        <div class="bg-white rounded-lg shadow-sm p-6">
+      <main class="flex-1 p-6 md:p-8">
+        <div class="page-content-card">
           <!-- Header Section -->
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Knowledge Base Management</h2>
-            <button
-              @click="uploadDocument"
-              class="bg-[#4A9CA6] hover:bg-[#3d8891] text-white font-semibold px-6 py-2 rounded-md transition flex items-center gap-2"
-            >
-              <span class="text-lg">+</span>
+            <button @click="uploadDocument" class="btn-primary flex items-center gap-2">
               Upload Document
             </button>
           </div>
@@ -47,19 +37,11 @@
             <table class="w-full">
               <thead>
                 <tr class="bg-gray-50 border-b border-gray-200">
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    Document Name
-                  </th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    Upload Date
-                  </th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    File Type
-                  </th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    File Size
-                  </th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">Actions</th>
+                  <th class="table-head-cell">Document Name</th>
+                  <th class="table-head-cell">Upload Date</th>
+                  <th class="table-head-cell">File Type</th>
+                  <th class="table-head-cell">File Size</th>
+                  <th class="table-head-cell">Actions</th>
                 </tr>
               </thead>
               <tbody></tbody>

@@ -1,61 +1,75 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
+import { ref } from 'vue'
+
+const isIndexing = ref(false)
+const scrapeError = ref('')
+
+async function handleFullScrape() {
+  if (isIndexing.value) {
+    return
+  }
+
+  isIndexing.value = true
+  scrapeError.value = ''
+
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/index_database', {
+      method: 'POST',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Indexing failed with status ${response.status}`)
+    }
+  } catch (error) {
+    scrapeError.value = 'Could not trigger full scrape. Check backend availability.'
+    console.error('Full scrape request failed:', error)
+  } finally {
+    isIndexing.value = false
+  }
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-gray-100">
+  <div class="page-shell">
     <!-- Header -->
-    <header class="bg-[#4A9CA6] text-white py-4 px-6 shadow-md">
-      <h1 class="text-2xl font-semibold">Web Scraper</h1>
+    <header class="page-header">
+      <h1 class="text-2xl font-semibold tracking-tight">Web Scraper</h1>
     </header>
 
     <div class="flex">
       <!-- Sidebar -->
-      <aside class="w-48 bg-gray-200 min-h-[calc(100vh-64px)]">
+      <aside class="page-sidebar">
         <nav class="py-4">
-          <RouterLink
-            to="/"
-            class="block px-6 py-3 text-gray-700 hover:bg-gray-300 transition"
-          >
-            Dashboard
-          </RouterLink>
-          <RouterLink
-            to="/web-scraper"
-            class="block px-6 py-3 text-[#4A9CA6] font-medium bg-white border-l-4 border-[#4A9CA6]"
-          >
-            Web Scraper
-          </RouterLink>
+          <RouterLink to="/" class="nav-item"> Dashboard </RouterLink>
+          <RouterLink to="/web-scraper" class="nav-item-active"> Web Scraper </RouterLink>
         </nav>
       </aside>
 
       <!-- Main Content -->
-      <main class="flex-1 p-8">
-        <div class="bg-white rounded-lg shadow-sm p-6">
-          <h2 class="text-2xl font-bold text-gray-800 mb-6">Scrape TUS Website</h2>
-
-          <div class="flex items-center justify-between mb-8">
-            <p class="text-gray-800 font-semibold text-lg">Scrape the entire website:</p>
+      <main class="flex-1 p-6 md:p-8">
+        <div class="page-content-card">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Scrape TUS Website</h2>
             <button
-              class="bg-[#4A9CA6] hover:bg-[#3d8891] text-white font-semibold px-6 py-2 rounded-md transition"
+              class="btn-primary flex items-center gap-2"
+              :disabled="isIndexing"
+              @click="handleFullScrape"
             >
               Full Scrape
             </button>
           </div>
+
+          <p v-if="scrapeError" class="mb-4 text-sm text-red-600">{{ scrapeError }}</p>
 
           <!-- Table -->
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
                 <tr class="bg-gray-50 border-b border-gray-200">
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    History
-                  </th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    Date
-                  </th>
-                  <th class="text-left py-3 px-4 text-sm font-semibold text-[#4A9CA6]">
-                    Status
-                  </th>
+                  <th class="table-head-cell">History</th>
+                  <th class="table-head-cell">Date</th>
+                  <th class="table-head-cell">Status</th>
                 </tr>
               </thead>
               <tbody>
