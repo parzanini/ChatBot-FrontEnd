@@ -1,9 +1,12 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { clearAuth } from '../services/auth'
 
 const isIndexing = ref(false)
 const scrapeError = ref('')
+const router = useRouter()
 
 async function handleFullScrape() {
   if (isIndexing.value) {
@@ -28,13 +31,27 @@ async function handleFullScrape() {
     isIndexing.value = false
   }
 }
+
+async function logout() {
+  clearAuth()
+  await router.push({ name: 'login' })
+}
 </script>
 
 <template>
   <div class="page-shell">
     <!-- Header -->
     <header class="page-header">
-      <h1 class="text-2xl font-semibold tracking-tight">Web Scraper</h1>
+      <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-semibold tracking-tight">Web Scraper</h1>
+        <button
+          type="button"
+          class="rounded-md border border-white/70 px-3 py-1 text-sm font-medium text-white transition hover:bg-white/15"
+          @click="logout"
+        >
+          Logout
+        </button>
+      </div>
     </header>
 
     <div class="flex">
@@ -67,18 +84,14 @@ async function handleFullScrape() {
             <table class="w-full">
               <thead>
                 <tr class="bg-gray-50 border-b border-gray-200">
-                  <th class="table-head-cell">History</th>
+                  <th class="table-head-cell">Pages Scraped</th>
+                  <th class="table-head-cell">PDF Files Indexed</th>
                   <th class="table-head-cell">Date</th>
                   <th class="table-head-cell">Status</th>
+                  <th class="table-head-cell">Time Taken</th>
+                  <th class="table-head-cell">Details</th>
                 </tr>
               </thead>
-              <tbody>
-                <tr class="border-b border-gray-100 hover:bg-gray-50">
-                  <td class="py-3 px-4 text-sm text-gray-700">Full Scrape</td>
-                  <td class="py-3 px-4 text-sm text-gray-700">Jan 10, 2026</td>
-                  <td class="py-3 px-4 text-sm text-gray-700 pl-4">Success</td>
-                </tr>
-              </tbody>
             </table>
           </div>
         </div>

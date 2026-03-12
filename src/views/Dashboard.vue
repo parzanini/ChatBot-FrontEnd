@@ -1,7 +1,17 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
+import { useRouter } from 'vue-router'
+import { clearAuth } from '../services/auth'
+
+const router = useRouter()
+
 function uploadDocument() {
   console.info('Upload document action is not implemented yet.')
+}
+
+async function logout() {
+  clearAuth()
+  await router.push({ name: 'login' })
 }
 </script>
 
@@ -9,7 +19,16 @@ function uploadDocument() {
   <div class="page-shell">
     <!-- Header -->
     <header class="page-header">
-      <h1 class="text-2xl font-semibold tracking-tight">Admin Dashboard</h1>
+      <div class="flex items-center justify-between gap-4">
+        <h1 class="text-2xl font-semibold tracking-tight">Admin Dashboard</h1>
+        <button
+          type="button"
+          class="rounded-md border border-white/70 px-3 py-1 text-sm font-medium text-white transition hover:bg-white/15"
+          @click="logout"
+        >
+          Logout
+        </button>
+      </div>
     </header>
 
     <div class="flex">
