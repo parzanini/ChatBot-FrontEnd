@@ -1,36 +1,48 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { clearAuth } from '../services/auth'
 
-const isIndexing = ref(false)
-const scrapeError = ref('')
 const router = useRouter()
+const runs = ref([])
+const error = ref('')
+const isIndexing = ref(false)
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/index_database_runs`)
+    const data = await res.json()
+    runs.value = (data.results ?? []).map((r) => ({
+      id: r.id,
+      pages: `${r.pages_indexed ?? 0}/${r.total_pages ?? 0} (failed: ${r.pages_failed ?? 0})`,
+      pdfs: `${r.pdfs_processed ?? 0}/${r.total_pdfs ?? 0} (failed: ${r.pdfs_failed ?? 0})`,
+      date: r.created_at ? new Date(r.created_at).toLocaleString() : '-',
+      success: r.success,
+      duration:
+        r.processing_time_minutes != null ? `${r.processing_time_minutes.toFixed(2)} min` : '-',
+      details: r.message || r.error || '-',
+    }))
+  } catch {
+    error.value = 'Failed to load scrape history.'
+  }
+}
 
 async function handleFullScrape() {
-  if (isIndexing.value) {
-    return
-  }
-
+  if (isIndexing.value) return
   isIndexing.value = true
-  scrapeError.value = ''
-
+  error.value = ''
   try {
-    const response = await fetch('http://127.0.0.1:8000/api/index_database', {
-      method: 'POST',
-    })
-
-    if (!response.ok) {
-      throw new Error(`Indexing failed with status ${response.status}`)
-    }
-  } catch (error) {
-    scrapeError.value = 'Could not trigger full scrape. Check backend availability.'
-    console.error('Full scrape request failed:', error)
+    await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/index_database`, { method: 'POST' })
+    await loadHistory()
+  } catch {
+    error.value = 'Could not trigger full scrape.'
   } finally {
     isIndexing.value = false
   }
 }
+
+onMounted(loadHistory)
 
 async function logout() {
   clearAuth()
@@ -77,7 +89,7 @@ async function logout() {
             </button>
           </div>
 
-          <p v-if="scrapeError" class="mb-4 text-sm text-red-600">{{ scrapeError }}</p>
+          <p v-if="error" class="mb-4 text-sm text-red-600">{{ error }}</p>
 
           <!-- Table -->
           <div class="overflow-x-auto">
@@ -92,6 +104,26 @@ async function logout() {
                   <th class="table-head-cell">Details</th>
                 </tr>
               </thead>
+              <tbody>
+                <template v-if="runs.length">
+                  <tr v-for="run in runs" :key="run.id" class="border-b border-gray-200">
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ run.pages }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ run.pdfs }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ run.date }}</td>
+                    <td
+                      class="px-4 py-3 text-sm"
+                      :class="run.success ? 'text-green-700' : 'text-red-700'"
+                    >
+                      {{ run.success ? 'Success' : 'Failed' }}
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ run.duration }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">{{ run.details }}</td>
+                  </tr>
+                </template>
+                <tr v-else class="border-b border-gray-200">
+                  <td colspan="6" class="px-4 py-6 text-sm text-gray-500">No scrape runs found.</td>
+                </tr>
+              </tbody>
             </table>
           </div>
         </div>
