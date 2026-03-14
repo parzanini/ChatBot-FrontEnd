@@ -10,6 +10,7 @@ const fileInput = ref(null)
 const isUploading = ref(false)
 const uploadError = ref('')
 const uploadSuccess = ref('')
+const deletingKey = ref(null)
 
 async function loadDocuments() {
   try {
@@ -18,6 +19,7 @@ async function loadDocuments() {
     const data = await res.json()
     documents.value = (data.documents ?? []).map((d) => ({
       key: d.source_name + d.upload_date,
+      sourceName: d.source_name,
       name: d.document_name || '-',
       date: d.upload_date ? new Date(d.upload_date).toLocaleString() : '-',
       type: (d.file_type || '-').toUpperCase(),
@@ -79,6 +81,30 @@ async function handleFileSelected(event) {
   }
 
   await uploadDocument(selectedFile)
+}
+
+async function deleteDocument(sourceName) {
+  if (deletingKey.value) return
+  deletingKey.value = sourceName
+  uploadError.value = ''
+  uploadSuccess.value = ''
+
+  try {
+    const res = await fetch('/api/manual_uploads', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source_name: sourceName }),
+    })
+    const data = await res.json()
+    if (!res.ok || !data.success) throw new Error(data.error || 'Delete failed')
+
+    uploadSuccess.value = `"${sourceName}" deleted successfully.`
+    await loadDocuments()
+  } catch (error) {
+    uploadError.value = error.message || 'Failed to delete document.'
+  } finally {
+    deletingKey.value = null
+  }
 }
 
 onMounted(loadDocuments)
@@ -148,6 +174,7 @@ async function logout() {
                   <th class="table-head-cell">Upload Date</th>
                   <th class="table-head-cell">File Type</th>
                   <th class="table-head-cell">Chunks</th>
+                  <th class="table-head-cell">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -157,6 +184,15 @@ async function logout() {
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.date }}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.type }}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.chunks }}</td>
+                    <td class="px-4 py-3 text-sm text-gray-700">
+                      <button
+                        class="rounded px-3 py-1.5 text-xs font-semibold text-white bg-red-500 hover:bg-red-600 transition disabled:opacity-70 disabled:cursor-not-allowed"
+                        :disabled="deletingKey === doc.sourceName"
+                        @click="deleteDocument(doc.sourceName)"
+                      >
+                        {{ deletingKey === doc.sourceName ? 'Deleting...' : 'Delete' }}
+                      </button>
+                    </td>
                   </tr>
                 </template>
                 <tr v-else class="border-b border-gray-200">
