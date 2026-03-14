@@ -6,10 +6,15 @@ import { clearAuth } from '../services/auth'
 
 const router = useRouter()
 const documents = ref([])
+const fileInput = ref(null)
+const isUploading = ref(false)
+const uploadError = ref('')
+const uploadSuccess = ref('')
 
-onMounted(async () => {
+async function loadDocuments() {
   try {
-    const res = await fetch('http://127.0.0.1:8000/api/manual_uploads')
+    const res = await fetch('/api/manual_uploads')
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     documents.value = (data.documents ?? []).map((d) => ({
       key: d.source_name + d.upload_date,
@@ -19,10 +24,64 @@ onMounted(async () => {
       size: d.file_size > 0 ? `${(d.file_size / 1048576).toFixed(2)} MB` : '-',
       chunks: d.chunks_count ?? 0,
     }))
-  } catch {
-    console.log('Failed to load documents.')
+  } catch (error) {
+    console.error('Failed to load documents:', error)
+    uploadError.value = 'Failed to load documents from API.'
   }
-})
+}
+
+function openFilePicker() {
+  if (isUploading.value) return
+  uploadError.value = ''
+  uploadSuccess.value = ''
+  fileInput.value?.click()
+}
+
+function isPdfFile(file) {
+  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+}
+
+async function uploadDocument(file) {
+  if (isUploading.value) return
+  isUploading.value = true
+  uploadError.value = ''
+  uploadSuccess.value = ''
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const res = await fetch('/local-api/upload_pdf', {
+      method: 'POST',
+      body: formData,
+    })
+    if (!res.ok) throw new Error('Upload failed')
+
+    uploadSuccess.value = 'PDF uploaded successfully.'
+    await loadDocuments()
+  } catch {
+    uploadError.value = 'Failed to upload PDF. Please try again.'
+  } finally {
+    isUploading.value = false
+    if (fileInput.value) fileInput.value.value = ''
+  }
+}
+
+async function handleFileSelected(event) {
+  const selectedFile = event.target.files?.[0]
+  if (!selectedFile) return
+
+  if (!isPdfFile(selectedFile)) {
+    uploadError.value = 'Only PDF files are allowed.'
+    uploadSuccess.value = ''
+    event.target.value = ''
+    return
+  }
+
+  await uploadDocument(selectedFile)
+}
+
+onMounted(loadDocuments)
 
 async function logout() {
   clearAuth()
@@ -61,8 +120,24 @@ async function logout() {
           <!-- Header Section -->
           <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-gray-800">Knowledge Base Management</h2>
-            <button class="btn-primary flex items-center gap-2">Upload Document</button>
+            <button
+              class="btn-primary flex items-center gap-2"
+              :disabled="isUploading"
+              @click="openFilePicker"
+            >
+              {{ isUploading ? 'Uploading...' : 'Upload Document' }}
+            </button>
+            <input
+              ref="fileInput"
+              type="file"
+              accept=".pdf,application/pdf"
+              class="hidden"
+              @change="handleFileSelected"
+            />
           </div>
+
+          <p v-if="uploadError" class="mb-4 text-sm text-red-600">{{ uploadError }}</p>
+          <p v-else-if="uploadSuccess" class="mb-4 text-sm text-green-700">{{ uploadSuccess }}</p>
 
           <!-- Table -->
           <div class="overflow-x-auto">
@@ -72,7 +147,6 @@ async function logout() {
                   <th class="table-head-cell">Document Name</th>
                   <th class="table-head-cell">Upload Date</th>
                   <th class="table-head-cell">File Type</th>
-                  <th class="table-head-cell">File Size</th>
                   <th class="table-head-cell">Chunks</th>
                 </tr>
               </thead>
@@ -82,7 +156,6 @@ async function logout() {
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.name }}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.date }}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.type }}</td>
-                    <td class="px-4 py-3 text-sm text-gray-700">{{ doc.size }}</td>
                     <td class="px-4 py-3 text-sm text-gray-700">{{ doc.chunks }}</td>
                   </tr>
                 </template>
