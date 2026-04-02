@@ -4,14 +4,18 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { clearAuth } from '../services/auth'
 
+// Router instance for navigation
 const router = useRouter()
-const documents = ref([])
-const fileInput = ref(null)
-const isUploading = ref(false)
-const uploadError = ref('')
-const uploadSuccess = ref('')
-const deletingKey = ref(null)
 
+// Document management state
+const documents = ref([]) // List of uploaded documents
+const fileInput = ref(null) // Hidden file input reference
+const isUploading = ref(false) // Upload in progress flag
+const uploadError = ref('') // Error message from upload/load operations
+const uploadSuccess = ref('') // Success message from upload/delete operations
+const deletingKey = ref(null) // Track which document is being deleted
+
+// Fetch uploaded documents from the API and format them for display
 async function loadDocuments() {
   try {
     const res = await fetch('/api/manual_uploads')
@@ -32,6 +36,7 @@ async function loadDocuments() {
   }
 }
 
+// Trigger file picker dialog and clear any existing messages
 function openFilePicker() {
   if (isUploading.value) return
   uploadError.value = ''
@@ -39,10 +44,12 @@ function openFilePicker() {
   fileInput.value?.click()
 }
 
+// Check if file is a PDF by MIME type or file extension
 function isPdfFile(file) {
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
 }
 
+// Upload PDF file to the server
 async function uploadDocument(file) {
   if (isUploading.value) return
   isUploading.value = true
@@ -69,6 +76,7 @@ async function uploadDocument(file) {
   }
 }
 
+// Handle file selection from file picker
 async function handleFileSelected(event) {
   const selectedFile = event.target.files?.[0]
   if (!selectedFile) return
@@ -83,6 +91,7 @@ async function handleFileSelected(event) {
   await uploadDocument(selectedFile)
 }
 
+// Delete a document from the knowledge base
 async function deleteDocument(sourceName) {
   if (deletingKey.value) return
   deletingKey.value = sourceName
@@ -107,8 +116,10 @@ async function deleteDocument(sourceName) {
   }
 }
 
+// Load documents when component mounts
 onMounted(loadDocuments)
 
+// Clear auth and redirect to login page
 async function logout() {
   clearAuth()
   await router.push({ name: 'login' })
@@ -206,5 +217,3 @@ async function logout() {
     </div>
   </div>
 </template>
-
-<style scoped></style>

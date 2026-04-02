@@ -4,11 +4,16 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { clearAuth } from '../services/auth'
 
+// Router instance for navigation
 const router = useRouter()
-const runs = ref([])
-const error = ref('')
-const isIndexing = ref(false)
 
+// Web scraper state
+const runs = ref([]) // List of scrape run history
+const error = ref('') // Error message from scrape operations
+const isIndexing = ref(false) // Full scrape in progress flag
+const LOCAL_SCRAPER_API_BASE = 'http://127.0.0.1:8000/api' // Local scraper API base URL
+
+// Fetch scrape run history from the API and format for display
 async function loadHistory() {
   try {
     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/index_database_runs`)
@@ -28,12 +33,13 @@ async function loadHistory() {
   }
 }
 
+// Trigger full scrape operation and reload history
 async function handleFullScrape() {
-  if (isIndexing.value) return
+  if (isIndexing.value) return // Prevent duplicate scrape requests
   isIndexing.value = true
   error.value = ''
   try {
-    await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/index_database`, { method: 'POST' })
+    await fetch(`${LOCAL_SCRAPER_API_BASE}/index_database`, { method: 'POST' })
     await loadHistory()
   } catch {
     error.value = 'Could not trigger full scrape.'
@@ -42,8 +48,10 @@ async function handleFullScrape() {
   }
 }
 
+// Load history when component mounts
 onMounted(loadHistory)
 
+// Clear auth and redirect to login page
 async function logout() {
   clearAuth()
   await router.push({ name: 'login' })
@@ -131,5 +139,3 @@ async function logout() {
     </div>
   </div>
 </template>
-
-<style scoped></style>

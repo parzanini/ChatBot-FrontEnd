@@ -4,14 +4,17 @@ import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { isAdmin, loginAdmin } from '../services/auth'
 
+// Router and route instances for navigation and query parameter access
 const router = useRouter()
 const route = useRoute()
 
+// Form state: email, password, loading status, and error messages
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 
+// Display error message based on the route reason query parameter
 function setRouteMessage() {
   const reason = route.query.reason
 
@@ -28,10 +31,9 @@ function setRouteMessage() {
   errorMessage.value = ''
 }
 
+// Handle form submission and authenticate user
 async function handleSubmit() {
-  if (loading.value) {
-    return
-  }
+  if (loading.value) return // Prevent duplicate submissions
 
   errorMessage.value = ''
   loading.value = true
@@ -46,6 +48,7 @@ async function handleSubmit() {
   }
 }
 
+// On component mount: redirect to dashboard if already logged in, otherwise show any route messages
 onMounted(async () => {
   if (isAdmin()) {
     await router.replace({ name: 'dashboard' })
@@ -55,6 +58,7 @@ onMounted(async () => {
   setRouteMessage()
 })
 
+// Watch for changes to route query reason parameter and update error message
 watch(
   () => route.query.reason,
   () => {
@@ -107,5 +111,3 @@ watch(
     </div>
   </div>
 </template>
-
-<style scoped></style>
